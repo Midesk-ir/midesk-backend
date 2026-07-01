@@ -1,58 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Midesk Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+بک‌اند API پلتفرم **Midesk** — سیستم یکپارچه مدیریت سازمان، پروژه، منابع انسانی، مالی و ارتباطات تیمی.
 
-## About Laravel
+- **فریمورک:** Laravel 13
+- **PHP:** 8.3+
+- **مخزن:** [github.com/Midesk-ir/midesk-backend](https://github.com/Midesk-ir/midesk-backend)
+- **مستندات فنی:** پوشه `midesk-docs` در ریپوی والد (فاز ۰ تا ۵)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## قابلیت‌ها
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| فاز | ماژول‌ها |
+|-----|---------|
+| **۰** | احراز هویت (Sanctum / OTP / Google OAuth)، Multi-tenant، سازمان و تیم، پروژه و تسک، کانبان، داشبورد، اعلان‌ها |
+| **۱** | اسپرینت، بک‌لاگ، ستون‌های کانبان + WIP، ورک‌لاگ، تقویم، تعطیلات، مرخصی |
+| **۲** | پرسنل، حضور و غیاب، قرارداد، اسناد HR، مأموریت، استخدام، آنبوردینگ |
+| **۳** | مالی (بودجه، هزینه، فاکتور، خرید، حقوق) + عملکرد (KPI، OKR، بازبینی) |
+| **۴** | چت، جلسات (Jitsi / BBB / Google Meet)، AI، یادداشت |
+| **۵** | مکاتبات، نظرسنجی، CRM، گزارش‌ساز، فایل پروژه، مهمان، اشتراک و پرداخت، سوپرادمین |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## پیش‌نیازها
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3+ با اکستنشن‌های `mbstring`, `pdo_mysql`, `redis`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `bcmath`
+- Composer 2
+- MySQL 8+
+- Redis (صف و کش)
+- Node.js 20+ (اختیاری — فقط برای Vite)
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## راه‌اندازی سریع (لوکال)
 
 ```bash
-composer require laravel/boost --dev
+git clone git@github.com:Midesk-ir/midesk-backend.git
+cd midesk-backend
 
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
+
+# دیتابیس و Redis را در .env تنظیم کنید، سپس:
+php artisan migrate:fresh --seed
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+API در آدرس `http://localhost:8000/api/v1` در دسترس است.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## راه‌اندازی با Docker
 
-## Code of Conduct
+```bash
+docker compose up -d
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate:fresh --seed
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| سرویس | آدرس |
+|--------|------|
+| API (nginx) | http://localhost:8080 |
+| MySQL | `localhost:3307` (user/pass/db: `midesk` / `secret` / `midesk`) |
+| Redis | `localhost:6380` |
 
-## Security Vulnerabilities
+برای محیط production از `docker/docker-compose.prod.yml` و اسکریپت‌های `docker/scripts/install.sh` و `update.sh` استفاده کنید.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## احراز هویت
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+API از **Laravel Sanctum** با Bearer token استفاده می‌کند.
+
+```http
+Authorization: Bearer {token}
+X-Tenant-Id: {tenant_uuid}
+Accept-Language: fa
+```
+
+### کاربران نمونه (بعد از seed)
+
+| ایمیل | نقش | رمز |
+|-------|-----|-----|
+| `owner@midesk.test` | OWNER | `password` |
+| `member@midesk.test` | MEMBER | `password` |
+| `finance@midesk.test` | FINANCE | `password` |
+
+### مسیرهای اصلی
+
+| مسیر | توضیح |
+|------|--------|
+| `POST /api/v1/auth/register` | ثبت‌نام |
+| `POST /api/v1/auth/login` | ورود |
+| `GET /api/v1/core/bootstrap` | بوت‌استرپ اولیه (نیاز به auth + tenant) |
+| `GET /api/v1/core/me` | پروفایل کاربر جاری |
+
+---
+
+## متغیرهای محیطی مهم
+
+| متغیر | توضیح |
+|-------|--------|
+| `DB_*` | اتصال MySQL |
+| `REDIS_*` | صف و کش |
+| `OTP_PROVIDER` | `log` در توسعه؛ سرویس واقعی در production |
+| `GOOGLE_CLIENT_*` | ورود با Google |
+| `QUEUE_CONNECTION` | `redis` برای Jobها |
+| `BROADCAST_CONNECTION` | `log` پیش‌فرض؛ Reverb برای real-time |
+
+جزئیات بیشتر در `.env.example`.
+
+---
+
+## تست
+
+```bash
+php artisan test
+```
+
+۵۰ تست Feature پوشش احراز هویت، multi-tenant، HR، مالی، عملکرد، چت، مهمان و سوپرادمین را شامل می‌شود.
+
+---
+
+## ساختار پروژه
+
+```
+app/
+  Http/Controllers/Api/V1/   # کنترلرهای API
+  Models/                  # مدل‌ها + BelongsToTenant
+  Policies/                # RBAC بر اساس نقش عضویت
+  Services/                # منطق کسب‌وکار
+routes/
+  api.php                  # مسیرهای فاز ۰، ۴، ۵
+  api_phase123.php         # مسیرهای فاز ۱، ۲، ۳
+database/migrations/       # ۲۳ migration
+tests/Feature/             # تست‌های Feature
+docker/                    # پیکربندی production
+```
+
+---
+
+## نقش‌های عضویت
+
+`OWNER` · `ADMIN` · `MANAGER` · `HR_MANAGER` · `FINANCE` · `MEMBER`
+
+دسترسی‌ها از طریق Laravel Policy و middleware `tenant` اعمال می‌شوند.
+
+---
+
+## لایسنس
+
+MIT
