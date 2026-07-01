@@ -141,6 +141,20 @@ docker/                    # پیکربندی production
 
 ---
 
+## مستندات API (OpenAPI)
+
+| منبع | مسیر |
+|------|------|
+| فایل OpenAPI | [`docs/openapi.json`](docs/openapi.json) |
+| راهنما | [`docs/README.md`](docs/README.md) |
+| UI تعاملی (لوکال) | http://localhost:8000/docs/api |
+
+```bash
+composer docs:openapi   # بازتولید openapi.json
+```
+
+---
+
 ## نقش‌های عضویت
 
 `OWNER` · `ADMIN` · `MANAGER` · `HR_MANAGER` · `FINANCE` · `MEMBER`
