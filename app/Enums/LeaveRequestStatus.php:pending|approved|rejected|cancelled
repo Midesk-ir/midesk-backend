@@ -1,0 +1,7 @@
+<?php
+
+namespace App\Enums;
+
+enum LeaveRequestStatus.php:pending|approved|rejected|cancelled: string
+{
+}

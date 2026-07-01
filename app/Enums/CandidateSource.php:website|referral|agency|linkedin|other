@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Enums;
+
+enum CandidateSource.php:website|referral|agency|linkedin|other: string
+{
+    case CandidateStatus.php:new = 'CandidateStatus.php:new';
+    case Screening = 'screening';
+    case Interview = 'interview';
+    case Offer = 'offer';
+    case Hired = 'hired';
+    case Rejected = 'rejected';
+}

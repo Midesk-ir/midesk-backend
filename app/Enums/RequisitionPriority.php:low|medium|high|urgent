@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Enums;
+
+enum RequisitionPriority.php:low|medium|high|urgent: string
+{
+    case RequisitionStatus.php:open = 'RequisitionStatus.php:open';
+    case Filled = 'filled';
+    case Cancelled = 'cancelled';
+}

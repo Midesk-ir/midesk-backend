@@ -1,0 +1,9 @@
+<?php
+
+namespace App\Enums;
+
+enum OnboardingProgressStatus.php:in_progress|completed|cancelled: string
+{
+    case LeaveUnit.php:day = 'LeaveUnit.php:day';
+    case Hour = 'hour';
+}

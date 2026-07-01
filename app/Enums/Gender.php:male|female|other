@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Enums;
+
+enum Gender.php:male|female|other: string
+{
+    case MaritalStatus.php:single = 'MaritalStatus.php:single';
+    case Married = 'married';
+    case Other = 'other';
+}

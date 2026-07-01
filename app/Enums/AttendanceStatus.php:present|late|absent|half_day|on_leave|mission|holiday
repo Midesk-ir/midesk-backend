@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Enums;
+
+enum AttendanceStatus.php:present|late|absent|half_day|on_leave|mission|holiday: string
+{
+    case ContractType.php:permanent = 'ContractType.php:permanent';
+    case FixedTerm = 'fixed_term';
+    case Trial = 'trial';
+    case Intern = 'intern';
+}
