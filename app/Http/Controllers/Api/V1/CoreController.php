@@ -4,16 +4,17 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Core\UpdateProfileRequest;
-use App\Http\Resources\BootstrapResource;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\Site\UserResource;
 use App\Models\Membership;
 use App\Models\Tenant;
+use App\Services\SiteCompatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 
 class CoreController extends Controller
 {
+    public function __construct(private readonly SiteCompatService $siteCompat) {}
+
     public function bootstrap(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,22 +23,7 @@ class CoreController extends Controller
         /** @var Membership $membership */
         $membership = app('membership');
 
-        $tenants = Tenant::query()
-            ->whereHas('memberships', fn ($q) => $q->where('user_id', $user->id)->where('status', 'active'))
-            ->get();
-
-        $unreadCount = $user->unreadNotifications()
-            ->when($tenant, fn ($q) => $q->where('tenant_id', $tenant->id))
-            ->count();
-
-        return response()->json(new BootstrapResource([
-            'user' => $user,
-            'tenant' => $tenant,
-            'membership' => $membership,
-            'tenants' => $tenants,
-            'unread_notifications_count' => $unreadCount,
-            'locale' => App::getLocale(),
-        ]));
+        return response()->json($this->siteCompat->bootstrapPayload($user, $tenant, $membership));
     }
 
     public function me(Request $request): JsonResponse
@@ -48,7 +34,11 @@ class CoreController extends Controller
     public function updateMe(UpdateProfileRequest $request): JsonResponse
     {
         $user = $request->user();
-        $user->update($request->validated());
+        $data = $request->validated();
+        if (isset($data['password'])) {
+            $data['password'] = bcrypt($data['password']);
+        }
+        $user->update($data);
 
         return response()->json(new UserResource($user->fresh()));
     }

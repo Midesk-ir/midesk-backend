@@ -84,4 +84,18 @@ class CandidateController extends Controller
             'onboarding' => new OnboardingProgressResource($result['onboarding']),
         ], 201);
     }
+
+    public function resume(Candidate $candidate): JsonResponse
+    {
+        $this->authorize('viewAny', Candidate::class);
+
+        return response()->json([
+            'data' => [
+                'id' => $candidate->id,
+                'full_name' => $candidate->full_name,
+                'resume_path' => $candidate->resume_path,
+                'resume_text' => $candidate->notes,
+            ],
+        ]);
+    }
 }

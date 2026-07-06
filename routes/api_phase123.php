@@ -152,6 +152,7 @@ Route::prefix('hr')->group(function (): void {
     Route::get('candidates/{candidate}', [CandidateController::class, 'show']);
     Route::patch('candidates/{candidate}', [CandidateController::class, 'update']);
     Route::post('candidates/{candidate}/hire', [CandidateController::class, 'hire']);
+    Route::get('candidates/{candidate}/resume', [CandidateController::class, 'resume']);
 
     Route::get('interviews', [InterviewController::class, 'index']);
     Route::post('interviews', [InterviewController::class, 'store']);
@@ -237,6 +238,7 @@ Route::prefix('finance')->group(function (): void {
 
 Route::prefix('my-finance')->group(function (): void {
     Route::get('payslips', [MyFinanceController::class, 'payslips']);
+    Route::get('payslips/{id}', [MyFinanceController::class, 'showPayslip']);
     Route::get('expenses', [MyFinanceController::class, 'expenses']);
     Route::get('receipts', [MyFinanceController::class, 'receipts']);
 });

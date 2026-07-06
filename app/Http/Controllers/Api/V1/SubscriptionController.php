@@ -16,7 +16,9 @@ class SubscriptionController extends Controller
     {
         $tenant = app('tenant');
 
-        return response()->json($this->subscriptionService->currentSubscription($tenant));
+        return response()->json([
+            'data' => $this->subscriptionService->currentSubscription($tenant),
+        ]);
     }
 
     public function plans(Request $request): JsonResponse

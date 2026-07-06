@@ -113,6 +113,7 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('notifications/{id}/read', [NotificationController::class, 'markRead']);
 
         require __DIR__.'/api_phase123.php';
+        require __DIR__.'/api_site_compat.php';
 
         // Phase 4: Chat
         Route::prefix('chat')->group(function (): void {
@@ -301,6 +302,8 @@ Route::bind('correspondenceRouting', fn (string $value) => \App\Models\Correspon
 Route::bind('surveyQuestion', fn (string $value) => \App\Models\SurveyQuestion::findOrFail($value));
 Route::bind('file', fn (string $value) => \App\Models\ProjectFile::findOrFail($value));
 Route::bind('guest', fn (string $value) => \App\Models\GuestAccess::findOrFail($value));
+Route::bind('customRole', fn (string $value) => tenantScopedFind(\App\Models\CustomRole::class, $value));
+Route::bind('progress', fn (string $value) => tenantScopedFind(\App\Models\OnboardingProgress::class, $value));
 Route::bind('report', fn (string $value) => \App\Models\CustomReport::findOrFail($value));
 
 /** @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass */

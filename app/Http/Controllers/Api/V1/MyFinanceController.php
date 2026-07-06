@@ -9,6 +9,7 @@ use App\Http\Resources\Finance\PayrollRecordResource;
 use App\Models\Expense;
 use App\Models\Payment;
 use App\Services\PayrollService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -23,6 +24,16 @@ class MyFinanceController extends Controller
         return PayrollRecordResource::collection(
             $records->load('contract')
         );
+    }
+
+    public function showPayslip(string $id): JsonResponse
+    {
+        $record = $this->payrollService->payslipsForUser(request()->user()->id)
+            ->firstWhere('id', $id);
+
+        abort_unless($record, 404);
+
+        return response()->json(['data' => new PayrollRecordResource($record->load('contract'))]);
     }
 
     public function expenses(Request $request): AnonymousResourceCollection

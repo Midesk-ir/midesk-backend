@@ -9,8 +9,9 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\Site\UserResource;
 use App\Services\AuthService;
+use App\Services\SiteCompatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
@@ -19,6 +20,7 @@ class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService,
+        private readonly SiteCompatService $siteCompat,
     ) {}
 
     public function register(RegisterRequest $request): JsonResponse
@@ -32,20 +34,14 @@ class AuthController extends Controller
     {
         $result = $this->authService->verifyOtpAndRegister($request->validated());
 
-        return response()->json([
-            'user' => new UserResource($result['user']),
-            'token' => $result['token'],
-        ]);
+        return response()->json($this->siteAuthResponse($result['user'], $result['token']));
     }
 
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
 
-        return response()->json([
-            'user' => new UserResource($result['user']),
-            'token' => $result['token'],
-        ]);
+        return response()->json($this->siteAuthResponse($result['user'], $result['token']));
     }
 
     public function loginOtp(LoginOtpRequest $request): JsonResponse
@@ -58,10 +54,7 @@ class AuthController extends Controller
 
         $result = $this->authService->loginWithOtp($data);
 
-        return response()->json([
-            'user' => new UserResource($result['user']),
-            'token' => $result['token'],
-        ]);
+        return response()->json($this->siteAuthResponse($result['user'], $result['token']));
     }
 
     public function logout(Request $request): JsonResponse
@@ -104,9 +97,15 @@ class AuthController extends Controller
 
         $result = $this->authService->createTokenResponse($user);
 
-        return response()->json([
-            'user' => new UserResource($result['user']),
-            'token' => $result['token'],
-        ]);
+        return response()->json($this->siteAuthResponse($result['user'], $result['token']));
+    }
+
+    /** @return array<string, mixed> */
+    private function siteAuthResponse(\App\Models\User $user, string $token): array
+    {
+        $payload = $this->siteCompat->authPayload($user);
+        $payload['token'] = $token;
+
+        return $payload;
     }
 }
