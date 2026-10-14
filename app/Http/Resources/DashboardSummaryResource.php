@@ -22,15 +22,15 @@ class DashboardSummaryResource extends JsonResource
             'leave_balances' => LeaveBalanceResource::collection($this->resource['leave_balances'] ?? []),
             'expiring_contracts_count' => $this->when(
                 array_key_exists('expiring_contracts_count', $this->resource),
-                $this->resource['expiring_contracts_count']
+                fn () => $this->resource['expiring_contracts_count']
             ),
             'new_candidates_count' => $this->when(
                 array_key_exists('new_candidates_count', $this->resource),
-                $this->resource['new_candidates_count']
+                fn () => $this->resource['new_candidates_count']
             ),
             'active_onboarding_count' => $this->when(
                 array_key_exists('active_onboarding_count', $this->resource),
-                $this->resource['active_onboarding_count']
+                fn () => $this->resource['active_onboarding_count']
             ),
         ];
     }

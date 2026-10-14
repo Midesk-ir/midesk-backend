@@ -48,4 +48,17 @@ class ProjectTest extends TestCase
             ->assertOk()
             ->assertJsonPath('key', 'DET');
     }
+
+    public function test_project_key_is_auto_generated_when_missing(): void
+    {
+        ['user' => $user, 'tenant' => $tenant, 'token' => $token] = $this->createUserWithTenant();
+
+        $this->withTenantAuth($user, $tenant, $token)
+            ->postJson('/api/v1/projects', [
+                'name' => 'Test Project',
+                'description' => '',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('key', 'TEST_PROJECT');
+    }
 }

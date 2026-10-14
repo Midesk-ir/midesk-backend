@@ -19,12 +19,19 @@ class ObjectiveResource extends JsonResource
             'period' => $this->period,
             'status' => $this->status->value,
             'progress_percent' => $this->progress_percent,
+            'progress' => $this->progress_percent,
             'parent_objective_id' => $this->parent_objective_id,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
             'user' => $this->whenLoaded('user', fn () => [
                 'id' => $this->user->id,
                 'full_name' => $this->user->full_name,
+                'name' => $this->user->full_name,
+            ]),
+            'owner' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user->id,
+                'full_name' => $this->user->full_name,
+                'name' => $this->user->full_name,
             ]),
             'key_results' => KeyResultResource::collection($this->whenLoaded('keyResults')),
         ];

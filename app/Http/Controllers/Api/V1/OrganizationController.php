@@ -74,11 +74,13 @@ class OrganizationController extends Controller
         $tenant = app('tenant');
         $data = $request->validated();
 
-        $user = User::query()->where('email', $data['email'])->first();
+        $identifierField = ! empty($data['email']) ? 'email' : 'phone';
+        $identifier = $data[$identifierField];
+        $user = User::query()->where($identifierField, $identifier)->first();
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'email' => [__('errors.user_not_found')],
+                $identifierField => [__('errors.user_not_found')],
             ]);
         }
 
@@ -87,7 +89,7 @@ class OrganizationController extends Controller
             [
                 'role' => $data['role'],
                 'status' => MembershipStatus::Invited,
-                'invited_email' => $data['email'],
+                'invited_email' => $user->email,
             ]
         );
 

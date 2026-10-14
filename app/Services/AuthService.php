@@ -35,13 +35,25 @@ class AuthService
             ]);
         }
 
-        $user = User::create([
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'full_name' => $data['full_name'],
-            'password' => isset($data['password']) ? $data['password'] : null,
-            'is_active' => true,
-        ]);
+        $user = User::query()
+            ->when(! empty($data['email']), fn ($q) => $q->where('email', $data['email']))
+            ->when(! empty($data['phone']), fn ($q) => $q->orWhere('phone', $data['phone']))
+            ->first();
+
+        if (! $user) {
+            $resolvedName = $data['full_name'] ?? $data['name'] ?? null;
+            if (! $resolvedName) {
+                $resolvedName = $data['email'] ?? $data['phone'] ?? 'New User';
+            }
+
+            $user = User::create([
+                'email' => $data['email'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'full_name' => $resolvedName,
+                'password' => isset($data['password']) ? $data['password'] : null,
+                'is_active' => true,
+            ]);
+        }
 
         return $this->createTokenResponse($user);
     }

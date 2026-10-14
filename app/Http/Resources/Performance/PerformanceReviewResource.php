@@ -28,10 +28,17 @@ class PerformanceReviewResource extends JsonResource
             'user' => $this->whenLoaded('user', fn () => [
                 'id' => $this->user->id,
                 'full_name' => $this->user->full_name,
+                'name' => $this->user->full_name,
+            ]),
+            'employee' => $this->whenLoaded('user', fn () => [
+                'id' => $this->user->id,
+                'full_name' => $this->user->full_name,
+                'name' => $this->user->full_name,
             ]),
             'reviewer' => $this->whenLoaded('reviewer', fn () => [
                 'id' => $this->reviewer->id,
                 'full_name' => $this->reviewer->full_name,
+                'name' => $this->reviewer->full_name,
             ]),
         ];
     }

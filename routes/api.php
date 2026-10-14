@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::post('super-admin/login', [SuperAdminAuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('super-admin/auth/login', [SuperAdminAuthController::class, 'login'])->middleware('throttle:5,1');
 
     Route::prefix('guest')->middleware('guest.token')->group(function (): void {
         Route::get('projects', [GuestController::class, 'guestProjects']);
@@ -59,7 +60,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('orgs', [OrganizationController::class, 'store']);
     });
 
-    Route::middleware(['auth:sanctum', 'tenant', 'locale'])->group(function (): void {
+    Route::middleware(['auth:sanctum', 'tenant', 'plan.access', 'locale'])->group(function (): void {
         Route::prefix('core')->group(function (): void {
             Route::get('bootstrap', [CoreController::class, 'bootstrap']);
             Route::get('me', [CoreController::class, 'me']);
@@ -252,6 +253,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('financial/send-expiry-reminders', [SuperAdminFinancialController::class, 'sendExpiryReminders']);
         Route::get('consultations', [SuperAdminConsultationController::class, 'index']);
         Route::get('consultations/stats', [SuperAdminConsultationController::class, 'stats']);
+        Route::patch('consultations/{consultation}', [SuperAdminConsultationController::class, 'update']);
     });
 });
 
@@ -305,6 +307,7 @@ Route::bind('guest', fn (string $value) => \App\Models\GuestAccess::findOrFail($
 Route::bind('customRole', fn (string $value) => tenantScopedFind(\App\Models\CustomRole::class, $value));
 Route::bind('progress', fn (string $value) => tenantScopedFind(\App\Models\OnboardingProgress::class, $value));
 Route::bind('report', fn (string $value) => \App\Models\CustomReport::findOrFail($value));
+Route::bind('consultation', fn (string $value) => \App\Models\Consultation::findOrFail($value));
 
 /** @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass */
 if (! function_exists('tenantScopedFind')) {

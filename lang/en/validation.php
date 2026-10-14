@@ -18,4 +18,13 @@ return [
     'url' => 'The :attribute must be a valid URL.',
     'alpha_dash' => 'The :attribute may only contain letters, numbers, dashes and underscores.',
     'not_in' => 'The selected :attribute is invalid.',
+
+    'attributes' => [
+        'email' => 'email',
+        'phone' => 'phone number',
+        'password' => 'password',
+        'name' => 'name',
+        'full_name' => 'name',
+        'code' => 'verification code',
+    ],
 ];

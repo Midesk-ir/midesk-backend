@@ -14,6 +14,22 @@ class UpdateOrganizationRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $locale = $this->input('locale');
+        if (! is_string($locale)) {
+            return;
+        }
+
+        $normalized = match (true) {
+            str_starts_with($locale, 'fa') => 'fa',
+            str_starts_with($locale, 'en') => 'en',
+            default => $locale,
+        };
+
+        $this->merge(['locale' => $normalized]);
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {

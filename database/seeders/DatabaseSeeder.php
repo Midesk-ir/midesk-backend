@@ -21,7 +21,10 @@ use App\Models\Membership;
 use App\Models\Objective;
 use App\Models\PerformanceIndicator;
 use App\Models\Plan;
+use App\Models\PlanPrice;
 use App\Models\Project;
+use App\Models\Subscription;
+use App\Models\SuperAdmin;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -32,11 +35,109 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $plan = Plan::create([
-            'name' => 'Free',
-            'code' => 'free',
-            'features' => ['max_projects' => 10, 'max_users' => 25],
-        ]);
+        SuperAdmin::query()->firstOrCreate(
+            ['email' => 'superadmin@midesk.io'],
+            [
+                'password' => 'superadmin',
+                'full_name' => 'Super Admin',
+                'is_active' => true,
+            ]
+        );
+
+        $plans = [
+            [
+                'name' => 'Bronze',
+                'code' => 'bronze',
+                'features' => [
+                    'max_projects' => 10,
+                    'max_users' => 25,
+                    'modules' => ['projects', 'work', 'collab', 'org'],
+                    'trial_days' => 30,
+                    'pricing' => [
+                        'IR' => ['monthly' => 399000, 'quarterly' => 1100000, 'semiannual' => 2100000, 'yearly' => 3900000],
+                    ],
+                ],
+                'price' => ['monthly' => 399000, 'yearly' => 3900000],
+            ],
+            [
+                'name' => 'Silver',
+                'code' => 'silver',
+                'features' => [
+                    'max_projects' => 30,
+                    'max_users' => 100,
+                    'modules' => ['projects', 'work', 'collab', 'org', 'hr'],
+                    'pricing' => [
+                        'IR' => [
+                            'monthly' => 999000,
+                            'monthly_original' => 1500000,
+                            'quarterly' => 3900000,
+                            'semiannual' => 7000000,
+                            'yearly' => 12000000,
+                        ],
+                    ],
+                ],
+                'price' => ['monthly' => 999000, 'yearly' => 12000000],
+            ],
+            [
+                'name' => 'Gold',
+                'code' => 'gold',
+                'features' => [
+                    'max_projects' => 80,
+                    'max_users' => 300,
+                    'modules' => ['projects', 'work', 'collab', 'org', 'hr', 'business'],
+                    'pricing' => [
+                        'IR' => [
+                            'monthly' => 2500000,
+                            'monthly_original' => 3000000,
+                            'quarterly' => 7000000,
+                            'semiannual' => 12000000,
+                            'yearly' => 22000000,
+                        ],
+                    ],
+                ],
+                'price' => ['monthly' => 2500000, 'yearly' => 22000000],
+            ],
+            [
+                'name' => 'Diamond',
+                'code' => 'diamond',
+                'features' => [
+                    'max_projects' => 300,
+                    'max_users' => 1500,
+                    'modules' => ['projects', 'work', 'collab', 'org', 'hr', 'business', 'finance'],
+                    'pricing' => [
+                        'IR' => [
+                            'monthly' => 4500000,
+                            'monthly_original' => 5000000,
+                            'quarterly' => 12000000,
+                            'semiannual' => 21000000,
+                            'yearly' => 40000000,
+                        ],
+                    ],
+                ],
+                'price' => ['monthly' => 4500000, 'yearly' => 40000000],
+            ],
+        ];
+
+        $bronzePlan = null;
+        foreach ($plans as $item) {
+            $plan = Plan::query()->updateOrCreate(
+                ['code' => $item['code']],
+                ['name' => $item['name'], 'features' => $item['features']]
+            );
+
+            PlanPrice::query()->updateOrCreate(
+                ['plan_id' => $plan->id, 'region' => 'IR'],
+                [
+                    'currency' => 'IRR',
+                    'monthly_amount' => $item['price']['monthly'],
+                    'yearly_amount' => $item['price']['yearly'],
+                ]
+            );
+
+            if ($item['code'] === 'bronze') {
+                $bronzePlan = $plan;
+            }
+        }
 
         $owner = User::create([
             'email' => 'owner@midesk.test',
@@ -67,8 +168,15 @@ class DatabaseSeeder extends Seeder
             'timezone' => 'Asia/Tehran',
             'default_currency' => 'IRR',
             'calendar_type' => 'jalali',
-            'plan_id' => $plan->id,
+            'plan_id' => $bronzePlan?->id,
         ]);
+
+        if ($bronzePlan) {
+            Subscription::query()->updateOrCreate(
+                ['tenant_id' => $tenant->id, 'plan_id' => $bronzePlan->id],
+                ['status' => 'trial', 'current_period_end' => now()->addMonth()]
+            );
+        }
 
         Membership::create([
             'tenant_id' => $tenant->id,

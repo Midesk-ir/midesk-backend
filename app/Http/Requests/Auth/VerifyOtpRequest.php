@@ -18,7 +18,8 @@ class VerifyOtpRequest extends FormRequest
             'email' => ['required_without:phone', 'nullable', 'email'],
             'phone' => ['required_without:email', 'nullable', 'string'],
             'code' => ['required', 'string', 'size:6'],
-            'full_name' => ['required', 'string', 'max:255'],
+            'full_name' => ['nullable', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }

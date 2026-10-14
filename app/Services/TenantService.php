@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Membership;
+use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -19,6 +21,8 @@ class TenantService
             $slug = $baseSlug.'-'.$counter++;
         }
 
+        $plan = Plan::query()->where('code', 'bronze')->first();
+
         $tenant = Tenant::create([
             'name' => $data['name'],
             'slug' => $slug,
@@ -27,6 +31,7 @@ class TenantService
             'timezone' => $data['timezone'] ?? 'Asia/Tehran',
             'default_currency' => $data['default_currency'] ?? 'IRR',
             'calendar_type' => $data['calendar_type'] ?? 'jalali',
+            'plan_id' => $plan?->id,
         ]);
 
         Membership::create([
@@ -36,6 +41,15 @@ class TenantService
             'status' => 'active',
             'joined_at' => now(),
         ]);
+
+        if ($plan) {
+            Subscription::create([
+                'tenant_id' => $tenant->id,
+                'plan_id' => $plan->id,
+                'status' => 'trial',
+                'current_period_end' => now()->addMonth(),
+            ]);
+        }
 
         return $tenant;
     }

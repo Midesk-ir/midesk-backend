@@ -8,7 +8,7 @@ return [
     'not_found' => 'منبع یافت نشد.',
     'http_error' => 'خطای سرور.',
     'member_already_exists' => 'این عضو قبلاً اضافه شده است.',
-    'user_not_found' => 'کاربر با این ایمیل یافت نشد.',
+    'user_not_found' => 'کاربری با این ایمیل یا شماره موبایل یافت نشد.',
     'attendance_already_checked_in' => 'امروز قبلاً ورود ثبت شده است.',
     'attendance_already_checked_out' => 'امروز قبلاً خروج ثبت شده است.',
     'attendance_not_checked_in' => 'هنوز ورود ثبت نشده است.',

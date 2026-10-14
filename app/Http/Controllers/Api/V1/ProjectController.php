@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -56,6 +57,9 @@ class ProjectController extends Controller
 
         $project = Project::create([
             ...$request->validated(),
+            'key' => $request->filled('key')
+                ? (string) $request->input('key')
+                : $this->generateProjectKey((string) $request->input('name'), (string) app('tenant')->id),
             'owner_user_id' => $user->id,
             'status' => $request->input('status', ProjectStatus::Active),
         ]);
@@ -68,6 +72,30 @@ class ProjectController extends Controller
         $this->kanbanService->createDefaultColumns($project);
 
         return response()->json(new ProjectResource($project->load(['owner', 'members'])), 201);
+    }
+
+    private function generateProjectKey(string $name, string $tenantId): string
+    {
+        $base = Str::upper(Str::slug($name, '_'));
+        $base = trim($base, '_');
+        $base = $base !== '' ? Str::limit($base, 20, '') : 'PROJECT';
+
+        $candidate = $base;
+        $suffix = 1;
+
+        while (
+            Project::query()
+                ->where('tenant_id', $tenantId)
+                ->where('key', $candidate)
+                ->exists()
+        ) {
+            $counter = (string) $suffix++;
+            $prefixMax = max(1, 20 - (strlen($counter) + 1));
+            $prefix = Str::limit($base, $prefixMax, '');
+            $candidate = "{$prefix}_{$counter}";
+        }
+
+        return $candidate;
     }
 
     public function show(Project $project): JsonResponse

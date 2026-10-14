@@ -4,7 +4,6 @@ use App\Http\Controllers\Api\V1\MemberController;
 use App\Http\Controllers\Api\V1\ModuleDashboardController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SiteCompatController;
-use App\Http\Controllers\Api\V1\SuperAdmin\AuthController as SuperAdminAuthController;
 use App\Http\Controllers\Api\V1\SuperAdmin\SettingsController as SuperAdminSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,8 +14,6 @@ use Illuminate\Support\Facades\Route;
 | Aliases and endpoints required by the Nuxt frontend mock API contract.
 | Base prefix: /api/v1 (applied by parent route group).
 */
-
-Route::post('super-admin/auth/login', [SuperAdminAuthController::class, 'login'])->middleware('throttle:5,1');
 
 Route::middleware(['auth:sanctum', 'tenant', 'locale'])->group(function (): void {
     Route::get('members', [MemberController::class, 'index']);

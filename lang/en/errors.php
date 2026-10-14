@@ -8,7 +8,7 @@ return [
     'not_found' => 'Resource not found.',
     'http_error' => 'Server error.',
     'member_already_exists' => 'Member already exists.',
-    'user_not_found' => 'No user found with this email.',
+    'user_not_found' => 'No user found with this email or phone number.',
     'attendance_already_checked_in' => 'Already checked in today.',
     'attendance_already_checked_out' => 'Already checked out today.',
     'attendance_not_checked_in' => 'Not checked in yet.',

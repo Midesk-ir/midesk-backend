@@ -28,6 +28,14 @@ class SprintController extends Controller
 
         $sprints = Sprint::query()
             ->where('project_id', $project->id)
+            ->withCount('tasks')
+            ->withCount(['tasks as done_count' => function ($query): void {
+                $query->whereHas('kanbanColumn', fn ($column) => $column->where('is_done_column', true));
+            }])
+            ->withSum('tasks as total_points', 'story_points')
+            ->withSum(['tasks as completed_points' => function ($query): void {
+                $query->whereHas('kanbanColumn', fn ($column) => $column->where('is_done_column', true));
+            }], 'story_points')
             ->orderByDesc('start_date')
             ->get();
 

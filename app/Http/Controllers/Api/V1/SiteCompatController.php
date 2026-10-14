@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sprint\CloseSprintRequest;
+use App\Http\Resources\LeaveRequestResource;
 use App\Models\AiRequest;
 use App\Models\CrmOpportunity;
 use App\Models\Correspondence;
@@ -19,6 +21,7 @@ use App\Services\ChatService;
 use App\Services\SiteCompatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Route aliases and response shims required by midesk-site (Nuxt mock API contract).
@@ -44,37 +47,29 @@ class SiteCompatController extends Controller
         return app(WorklogController::class)->index($request);
     }
 
-    public function pendingLeaveRequests(): JsonResponse
+    public function pendingLeaveRequests(): AnonymousResourceCollection
     {
-        return response()->json(['data' => $this->siteCompat->pendingLeaveRequests()]);
+        return LeaveRequestResource::collection($this->siteCompat->pendingLeaveRequests());
     }
 
     public function approveLeavePatch(LeaveRequest $leaveRequest): JsonResponse
     {
-        $response = app(LeaveController::class)->approve($leaveRequest);
-
-        return response()->json(['data' => $response->getData(true)]);
+        return app(LeaveController::class)->approve($leaveRequest);
     }
 
     public function rejectLeavePatch(Request $request, LeaveRequest $leaveRequest): JsonResponse
     {
-        $response = app(LeaveController::class)->reject($request, $leaveRequest);
-
-        return response()->json(['data' => $response->getData(true)]);
+        return app(LeaveController::class)->reject($request, $leaveRequest);
     }
 
     public function approveMissionPatch(Mission $mission): JsonResponse
     {
-        $response = app(Hr\MissionController::class)->approve($mission);
-
-        return response()->json(['data' => $response->getData(true)]);
+        return app(Hr\MissionController::class)->approve($mission);
     }
 
     public function rejectMissionPatch(Mission $mission): JsonResponse
     {
-        $response = app(Hr\MissionController::class)->reject($mission);
-
-        return response()->json(['data' => $response->getData(true)]);
+        return app(Hr\MissionController::class)->reject($mission);
     }
 
     public function breakStart(Request $request): JsonResponse
@@ -101,11 +96,11 @@ class SiteCompatController extends Controller
         return app(SprintController::class)->activate($sprint);
     }
 
-    public function closeSprint(Project $project, Sprint $sprint): JsonResponse
+    public function closeSprint(CloseSprintRequest $request, Project $project, Sprint $sprint): JsonResponse
     {
         abort_unless($sprint->project_id === $project->id, 404);
 
-        return app(SprintController::class)->close($sprint);
+        return app(SprintController::class)->close($request, $sprint);
     }
 
     public function reorderProjectColumns(Request $request, Project $project): JsonResponse

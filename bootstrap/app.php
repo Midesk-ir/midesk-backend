@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateGuest;
 use App\Http\Middleware\AuthenticateSuperAdmin;
+use App\Http\Middleware\CheckPlanAccess;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant' => ResolveTenant::class,
+            'plan.access' => CheckPlanAccess::class,
             'locale' => SetLocale::class,
             'guest.token' => AuthenticateGuest::class,
             'super-admin' => AuthenticateSuperAdmin::class,

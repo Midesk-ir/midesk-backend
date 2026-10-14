@@ -19,7 +19,7 @@ class StoreProjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'key' => ['required', 'string', 'max:20', 'alpha_dash'],
+            'key' => ['nullable', 'string', 'max:20', 'alpha_dash'],
             'description' => ['nullable', 'string'],
             'status' => ['nullable', Rule::enum(ProjectStatus::class)],
             'start_date' => ['nullable', 'date'],

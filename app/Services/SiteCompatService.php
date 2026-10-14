@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\CrmOpportunityStage;
 use App\Enums\LeaveRequestStatus;
+use App\Enums\ReviewStatus;
 use App\Http\Resources\Site\UserResource;
 use App\Http\Resources\TenantResource;
 use App\Models\Candidate;
@@ -13,16 +14,19 @@ use App\Models\CrmOpportunity;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\LeaveRequest;
+use Illuminate\Database\Eloquent\Collection;
 use App\Models\Membership;
 use App\Models\Objective;
 use App\Models\PayrollRecord;
 use App\Models\PerformanceIndicator;
 use App\Models\PerformanceReview;
+use App\Models\PerformanceScore;
 use App\Models\Personnel;
 use App\Models\Subscription;
 use App\Models\SubscriptionInvoice;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\PlanFeatureGate;
 use App\Support\SitePermissions;
 use Illuminate\Support\Facades\Cache;
 
@@ -44,10 +48,12 @@ class SiteCompatService
 
     public function bootstrapPayload(User $user, Tenant $tenant, Membership $membership): array
     {
+        $permissions = SitePermissions::forRole($membership->role?->value);
+
         return [
             'user' => new UserResource($user, $membership),
             'tenant' => new TenantResource($tenant),
-            'permissions' => SitePermissions::forRole($membership->role?->value),
+            'permissions' => PlanFeatureGate::filterPermissions($permissions, $tenant),
         ];
     }
 
@@ -131,20 +137,93 @@ class SiteCompatService
     {
         $objectives = Objective::query()->get();
 
+        $objectivesSummary = [
+            'on_track' => 0,
+            'at_risk' => 0,
+            'off_track' => 0,
+            'completed' => 0,
+        ];
+
+        foreach ($objectives as $objective) {
+            $status = $objective->status?->value ?? $objective->status;
+            if ($status === 'completed') {
+                $objectivesSummary['completed']++;
+                continue;
+            }
+            if ($status !== 'active') {
+                continue;
+            }
+
+            $progress = (int) $objective->progress_percent;
+            if ($progress >= 70) {
+                $objectivesSummary['on_track']++;
+            } elseif ($progress >= 40) {
+                $objectivesSummary['at_risk']++;
+            } else {
+                $objectivesSummary['off_track']++;
+            }
+        }
+
+        $indicators = PerformanceIndicator::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get()
+            ->map(function (PerformanceIndicator $indicator) {
+                $latestScore = PerformanceScore::query()
+                    ->with('user')
+                    ->where('indicator_id', $indicator->id)
+                    ->orderByDesc('created_at')
+                    ->first();
+
+                return [
+                    'id' => $indicator->id,
+                    'name' => $indicator->name,
+                    'description' => $indicator->description,
+                    'unit' => $indicator->measurement_unit ?? '',
+                    'target' => (float) ($indicator->target_value ?? 0),
+                    'current' => (float) ($latestScore?->score ?? 0),
+                    'owner' => $this->userBrief($latestScore?->user),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $upcomingReviews = PerformanceReview::query()
+            ->with(['user', 'reviewer'])
+            ->where('status', '!=', ReviewStatus::Finalized->value)
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get()
+            ->map(fn (PerformanceReview $review) => [
+                'id' => $review->id,
+                'employee' => $this->userBrief($review->user),
+                'reviewer' => $this->userBrief($review->reviewer),
+                'period' => $review->period,
+                'status' => $review->status?->value ?? $review->status,
+                'score' => $review->overall_score !== null ? (float) $review->overall_score : null,
+                'scheduled_at' => ($review->created_at ?? now())->toIso8601String(),
+            ])
+            ->values()
+            ->all();
+
         return [
-            'indicators' => PerformanceIndicator::query()->with('owner')->get(),
-            'objectives_summary' => [
-                'on_track' => $objectives->where('status', 'on_track')->count(),
-                'at_risk' => $objectives->where('status', 'at_risk')->count(),
-                'off_track' => $objectives->where('status', 'off_track')->count(),
-                'completed' => $objectives->where('status', 'completed')->count(),
-            ],
-            'upcoming_reviews' => PerformanceReview::query()
-                ->with(['employee', 'reviewer'])
-                ->where('status', '!=', 'completed')
-                ->orderBy('scheduled_at')
-                ->limit(10)
-                ->get(),
+            'indicators' => $indicators,
+            'objectives_summary' => $objectivesSummary,
+            'upcoming_reviews' => $upcomingReviews,
+        ];
+    }
+
+    /** @return array{id: string, name: string, avatar_url: string|null} */
+    private function userBrief(?User $user): array
+    {
+        if (! $user) {
+            return ['id' => '', 'name' => '—', 'avatar_url' => null];
+        }
+
+        return [
+            'id' => $user->id,
+            'name' => $user->full_name,
+            'avatar_url' => $user->avatar_url,
         ];
     }
 
@@ -172,14 +251,13 @@ class SiteCompatService
     }
 
     /** @return list<\App\Models\LeaveRequest> */
-    public function pendingLeaveRequests(): array
+    public function pendingLeaveRequests(): Collection
     {
         return LeaveRequest::query()
             ->with(['leaveType', 'user'])
             ->where('status', LeaveRequestStatus::Pending)
             ->orderByDesc('created_at')
-            ->get()
-            ->all();
+            ->get();
     }
 
     /** @return list<UserResource> */

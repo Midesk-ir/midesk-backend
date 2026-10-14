@@ -18,4 +18,13 @@ return [
     'url' => 'فرمت :attribute نامعتبر است.',
     'alpha_dash' => ':attribute فقط می‌تواند شامل حروف، اعداد، خط تیره و زیرخط باشد.',
     'not_in' => ':attribute انتخاب‌شده نامعتبر است.',
+
+    'attributes' => [
+        'email' => 'ایمیل',
+        'phone' => 'شماره موبایل',
+        'password' => 'رمز عبور',
+        'name' => 'نام',
+        'full_name' => 'نام',
+        'code' => 'کد تأیید',
+    ],
 ];
