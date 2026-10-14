@@ -27,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'tenant' => ResolveTenant::class,
             'plan.access' => CheckPlanAccess::class,
